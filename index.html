@@ -9,18 +9,10 @@
 <body>
     <div class="container">
         <h1>Ari's LinkedIn Horizontal Career Trajectory Parser</h1>
-        <p>Upload your LinkedIn profile PDF to analyze your career trajectory.</p>
-        <input type="file" id="fileInput" accept=".pdf" />
-        <button onclick="parsePDF()">Analyze Profile</button>
-
-        <div id="output">
-            <h2>Career Overview</h2>
-            <p id="error-message"></p>
-            <div id="careerInfo"></div>
-        </div>
+        <input type="file" id="fileInput" accept="application/pdf">
+        <button id="uploadButton">Upload PDF</button>
+        <div id="output"></div>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
