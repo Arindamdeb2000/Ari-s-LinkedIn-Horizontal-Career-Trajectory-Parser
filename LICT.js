@@ -1,0 +1,94 @@
+function parsePDF() {
+    const fileInput = document.getElementById("fileInput");
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("Please upload a PDF file!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+        const pdfData = new Uint8Array(event.target.result);
+
+        // Use PDF.js to parse the PDF
+        pdfjsLib.getDocument(pdfData).promise.then(function(pdf) {
+            let textContent = '';
+            let totalPages = pdf.numPages;
+            let pagePromises = [];
+
+            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                pagePromises.push(pdf.getPage(pageNum).then(function(page) {
+                    return page.getTextContent().then(function(text) {
+                        textContent += text.items.map(item => item.str).join(' ') + ' ';
+                    });
+                }));
+            }
+
+            Promise.all(pagePromises).then(function() {
+                analyzeCareer(textContent);
+            });
+        }).catch(function(error) {
+            console.error("Error reading PDF: ", error);
+            document.getElementById("error-message").textContent = "There was an error reading the PDF. Please try again.";
+        });
+    };
+
+    reader.readAsArrayBuffer(file);
+}
+
+function analyzeCareer(textContent) {
+    const careerInfo = extractCareerDetails(textContent);
+    if (careerInfo) {
+        displayCareerInfo(careerInfo);
+    } else {
+        document.getElementById("error-message").textContent = "Couldn't extract career details. Make sure the PDF is properly formatted.";
+    }
+}
+
+function extractCareerDetails(text) {
+    // This will need to be more sophisticated, but here's a simple approach
+    const experienceRegex = /(?<=Experience)([\s\S]*?)(?=Education|Skills|Certifications)/g;
+    const matches = text.match(experienceRegex);
+
+    if (!matches) return null;
+
+    let roles = [];
+    matches.forEach(match => {
+        const jobRegex = /(\d{4}-\d{4}|Present)([^,]+), (.*?)(?=\d{4}-|Present)/g;
+        const roleDetails = [...match.matchAll(jobRegex)];
+        
+        roleDetails.forEach(role => {
+            const startEndDate = role[1].split('-');
+            const roleDetails = {
+                company: role[2].trim(),
+                title: role[3].trim(),
+                startDate: startEndDate[0].trim(),
+                endDate: startEndDate[1]?.trim() || "Present",
+                promotions: role[3].includes("Senior") || role[3].includes("Lead") ? 1 : 0
+            };
+            roles.push(roleDetails);
+        });
+    });
+
+    return roles;
+}
+
+function displayCareerInfo(roles) {
+    const careerInfoDiv = document.getElementById("careerInfo");
+    careerInfoDiv.innerHTML = '';
+
+    roles.forEach(role => {
+        const roleElement = document.createElement("div");
+        roleElement.classList.add("role");
+
+        const roleInfo = `
+            <p><strong>Company:</strong> ${role.company}</p>
+            <p><strong>Role Title:</strong> ${role.title}</p>
+            <p><strong>Start Date:</strong> ${role.startDate}</p>
+            <p><strong>End Date:</strong> ${role.endDate}</p>
+            <p><strong>Promotions:</strong> ${role.promotions}</p>
+        `;
+        roleElement.innerHTML = roleInfo;
+        careerInfoDiv.appendChild(roleElement);
+    });
+}
