@@ -67,8 +67,7 @@ function extractCareerDetails(text) {
                 title: role[3].trim(),
                 startDate: startEndDate[0].trim(),
                 endDate: startEndDate[1]?.trim() || "Present",
-                timeSpent: timeSpent,
-                promotions: role[3].includes("Senior") || role[3].includes("Lead") ? 1 : 0
+                timeSpent: timeSpent
             };
             roles.push(roleDetails);
         });
@@ -93,14 +92,25 @@ function displayCareerInfo(roles) {
         roleElement.classList.add("role");
 
         const roleInfo = `
+            <p><strong>Title/Role:</strong> ${role.title}</p>
+            <p><strong>Experience Range:</strong> ${role.startDate} - ${role.endDate}</p>
             <p><strong>Company:</strong> ${role.company}</p>
-            <p><strong>Role Title:</strong> ${role.title}</p>
-            <p><strong>Start Date:</strong> ${role.startDate}</p>
-            <p><strong>End Date:</strong> ${role.endDate}</p>
             <p><strong>Time Spent:</strong> ${role.timeSpent}</p>
-            <p><strong>Promotions:</strong> ${role.promotions}</p>
         `;
         roleElement.innerHTML = roleInfo;
         careerInfoDiv.appendChild(roleElement);
     });
+
+    // Display total career trajectory
+    const totalCareerElement = document.createElement("div");
+    totalCareerElement.classList.add("total-career");
+
+    const totalCareerInfo = roles.map(role => `
+        <p><strong>Title/Role:</strong> ${role.title}</p>
+        <p><strong>Experience Range:</strong> ${role.startDate} - ${role.endDate}</p>
+        <p><strong>Company:</strong> ${role.company}</p>
+    `).join('');
+
+    totalCareerElement.innerHTML = `<h3>Total Career Trajectory:</h3>${totalCareerInfo}`;
+    careerInfoDiv.appendChild(totalCareerElement);
 }
