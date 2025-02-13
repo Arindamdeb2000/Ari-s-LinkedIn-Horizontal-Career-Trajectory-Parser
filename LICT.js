@@ -59,11 +59,15 @@ function extractCareerDetails(text) {
         
         roleDetails.forEach(role => {
             const startEndDate = role[1].split('-');
+            const startDate = new Date(startEndDate[0].trim());
+            const endDate = startEndDate[1]?.trim() === "Present" ? new Date() : new Date(startEndDate[1].trim());
+            const timeSpent = calculateTimeSpent(startDate, endDate);
             const roleDetails = {
                 company: role[2].trim(),
                 title: role[3].trim(),
                 startDate: startEndDate[0].trim(),
                 endDate: startEndDate[1]?.trim() || "Present",
+                timeSpent: timeSpent,
                 promotions: role[3].includes("Senior") || role[3].includes("Lead") ? 1 : 0
             };
             roles.push(roleDetails);
@@ -71,6 +75,13 @@ function extractCareerDetails(text) {
     });
 
     return roles;
+}
+
+function calculateTimeSpent(startDate, endDate) {
+    const diffTime = Math.abs(endDate - startDate);
+    const diffYears = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 365));
+    const diffMonths = Math.floor((diffTime % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24 * 30));
+    return `${diffYears} years, ${diffMonths} months`;
 }
 
 function displayCareerInfo(roles) {
@@ -86,6 +97,7 @@ function displayCareerInfo(roles) {
             <p><strong>Role Title:</strong> ${role.title}</p>
             <p><strong>Start Date:</strong> ${role.startDate}</p>
             <p><strong>End Date:</strong> ${role.endDate}</p>
+            <p><strong>Time Spent:</strong> ${role.timeSpent}</p>
             <p><strong>Promotions:</strong> ${role.promotions}</p>
         `;
         roleElement.innerHTML = roleInfo;
